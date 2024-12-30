@@ -1,6 +1,7 @@
 package com.example.nestednotes;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -54,6 +55,19 @@ public class MainActivity extends AppCompatActivity {
                         noteHeadingEditText.setText("");
                     }
                 }
+            }
+        });
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Get the note to open
+                DatabaseHelper.Note selectedNote = notes.get(position);
+
+                // Open NoteDetailsActivity
+                Intent intent = new Intent(MainActivity.this, NoteDetailsActivity.class);
+                intent.putExtra("noteId", selectedNote.getId());
+                startActivity(intent);
             }
         });
 

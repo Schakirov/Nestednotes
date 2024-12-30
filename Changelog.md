@@ -5,6 +5,8 @@ Commit f6c374f
 Add basic note creation functionality to MainActivity
 I changed the initial project so that it shows a list of note headings, with a possibility to add a new one.
 
-Commit
+Commit f323080
 Add SQLite database class, saving/loading notes
 
+Commit
+Add NoteDetailsActivity to show notes
