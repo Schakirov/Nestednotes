@@ -8,5 +8,10 @@ I changed the initial project so that it shows a list of note headings, with a p
 Commit f323080
 Add SQLite database class, saving/loading notes
 
-Commit
+Commit 6dd7735
 Add NoteDetailsActivity to show notes
+
+Commit
+Add ViewModel and basic symbol insertion handling for NoteDetailsActivity
+Implemented NoteDetailsViewModel to handle symbol insertion, text updates, and state management for NoteDetailsActivity. Integrated a TextWatcher to notify the ViewModel of text changes. Added a stream to emit symbol updates from ViewModel based on inputs from TextWatcher. 
+
