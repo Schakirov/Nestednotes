@@ -24,6 +24,7 @@ public class NoteDetailsActivity extends AppCompatActivity {
     private long noteId;
     private DatabaseHelper databaseHelper;
     private NoteDetailsViewModel viewModel; // ViewModel instance
+    private boolean isProgrammaticChange = false; // Flag to differentiate user and programmatic changes
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +36,7 @@ public class NoteDetailsActivity extends AppCompatActivity {
         saveNoteButton = findViewById(R.id.saveNoteButton);
         insertSymbolButton = findViewById(R.id.insertSymbolButton);
         databaseHelper = new DatabaseHelper(this);
-        viewModel = new NoteDetailsViewModel(); // Initialize ViewModel
+        viewModel = new NoteDetailsViewModel(databaseHelper); // Initialize ViewModel
 
         // Get noteId from the intent
         Intent intent = getIntent();
@@ -47,6 +48,7 @@ public class NoteDetailsActivity extends AppCompatActivity {
             if (note != null) {
                 noteHeadingEditText.setText(note.getHeading());
                 noteDetailsEditText.setText(note.getDetails());
+                viewModel.onNoteLoading(noteId);
             }
         }
 
@@ -74,19 +76,25 @@ public class NoteDetailsActivity extends AppCompatActivity {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 // Inform ViewModel of the upcoming change
-                viewModel.onBeforeTextChanged(s, start, count, after);
+                if (!isProgrammaticChange) {
+                    viewModel.onBeforeTextChanged(s, start, count, after);
+                }
             }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 // Inform ViewModel of the change in progress
-                viewModel.onTextChanged(s, start, before, count);
+                if (!isProgrammaticChange) {
+                    viewModel.onTextChanged(s, start, before, count);
+                }
             }
 
             @Override
             public void afterTextChanged(Editable s) {
                 // Inform ViewModel of the completed change
-                viewModel.onAfterTextChanged(s);
+                if (!isProgrammaticChange) {
+                    viewModel.onAfterTextChanged(s);
+                }
             }
         });
 
@@ -95,11 +103,13 @@ public class NoteDetailsActivity extends AppCompatActivity {
             // Apply symbol updates to noteDetailsEditText
             Editable editable = noteDetailsEditText.getText();
             //int cursorPosition = noteDetailsEditText.getSelectionStart();
+            isProgrammaticChange = true;
 
             for (NoteDetailsViewModel.SymbolUpdate update : updates) {
                 int cursorPosition = update.getPosition();
-                if (update.get_n_remove() > 0) {
-                    int start = cursorPosition - update.get_n_remove();
+                if (update.get_n_remove() != 0) {
+                    int start = Math.min(cursorPosition, cursorPosition - update.get_n_remove());
+                    cursorPosition = Math.max(cursorPosition, cursorPosition - update.get_n_remove());
                     if (start >= 0 && cursorPosition <= editable.length()) {
                         editable.delete(start, cursorPosition);
                         cursorPosition = start;
@@ -114,6 +124,16 @@ public class NoteDetailsActivity extends AppCompatActivity {
 
             // Set the cursor position after applying updates
             //noteDetailsEditText.setSelection(cursorPosition);
+            isProgrammaticChange = false;
+        });
+
+        // Observe ViewModel for clickable substring updates
+        viewModel.getClickableUpdates().observe(this, updates -> {
+            isProgrammaticChange = true;
+            for (NoteDetailsViewModel.ClickableUpdate update : updates) {
+                makeSubstringClickable(update.getStart(), update.getEnd());
+            }
+            isProgrammaticChange = false;
         });
     }
 
@@ -149,11 +169,18 @@ public class NoteDetailsActivity extends AppCompatActivity {
 
     public void makeSubstringClickable(int start, int end) {
         Spannable spannable = noteDetailsEditText.getText();
-        spannable.setSpan(new ClickableSpan() {
+        ClickableSpan clickableSpan = new ClickableSpan() {
             @Override
             public void onClick(View widget) {
-                String clickedSubstring = spannable.subSequence(start, end).toString();
-                viewModel.onSubstringClicked(start, end, clickedSubstring);
+                // Dynamically calculate the current start and end positions
+                Spannable currentSpannable = noteDetailsEditText.getText();
+                int currentStart = currentSpannable.getSpanStart(this);
+                int currentEnd = currentSpannable.getSpanEnd(this);
+
+                if (currentStart != -1 && currentEnd != -1) {
+                    String clickedSubstring = currentSpannable.subSequence(currentStart, currentEnd).toString();
+                    viewModel.onSubstringClicked(currentStart, currentEnd, clickedSubstring);
+                }
             }
 
             @Override
@@ -161,8 +188,12 @@ public class NoteDetailsActivity extends AppCompatActivity {
                 super.updateDrawState(ds);
                 ds.setUnderlineText(false); // Optional: Disable underline for clickable text
             }
-        }, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        };
 
+        // Set the clickable span
+        spannable.setSpan(clickableSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        // Ensure clickable spans are enabled
         noteDetailsEditText.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

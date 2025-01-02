@@ -11,7 +11,10 @@ Add SQLite database class, saving/loading notes
 Commit 6dd7735
 Add NoteDetailsActivity to show notes
 
-Commit
+Commit 56112e1
 Add ViewModel and basic symbol insertion handling for NoteDetailsActivity
 Implemented NoteDetailsViewModel to handle symbol insertion, text updates, and state management for NoteDetailsActivity. Integrated a TextWatcher to notify the ViewModel of text changes. Added a stream to emit symbol updates from ViewModel based on inputs from TextWatcher. 
 
+Commit
+Add NoteTreeHandler.java for handling notes as trees.
+First-level comments can be expanded and minimized correctly.
