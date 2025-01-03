@@ -5,6 +5,8 @@ import androidx.lifecycle.MutableLiveData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import androidx.core.util.Pair;
+import com.example.nestednotes.NoteTreeMarkupConverter;
 
 public class NoteDetailsViewModel {
 
@@ -15,6 +17,7 @@ public class NoteDetailsViewModel {
     private DatabaseHelper databaseHelper;
 
     public String noteDetails;
+    public String noteHeading;
     public NoteTreeHandler tree = new NoteTreeHandler();
 
     public NoteDetailsViewModel(DatabaseHelper databaseHelper) {
@@ -31,15 +34,33 @@ public class NoteDetailsViewModel {
         return clickableUpdates;
     }
 
-    public void onNoteLoading(long noteId) {
+    public Pair<String, String>  onNoteLoading(long noteId) {
         if (noteId != -1) {
             // Load existing note details
             DatabaseHelper.Note note = databaseHelper.getNoteById(noteId);
             if (note != null) {
-                noteDetails = note.getDetails();
-                tree.addSubstring(0, noteDetails);
+                noteHeading = note.getHeading();
+                String markup = note.getDetails();
+                tree = NoteTreeMarkupConverter.buildTreeFromMarkup(markup);
+                //noteDetails = note.getDetails();
+                //tree.addSubstring(0, noteDetails);
+                noteDetails = tree.calculateSymbolsFromTree();
+                return new Pair<>(noteHeading, noteDetails);
             }
         }
+        return null;
+    }
+
+    public void onNoteLoadingMakeSymbolsClickable(String noteDetails) {
+        List<ClickableUpdate> updates_clickable = new ArrayList<>();
+        int offset = 0;
+        for (int i = 0; i < noteDetails.length(); i++) {
+            char c = noteDetails.charAt(i);
+            if (c == '■' || c == '◆') {
+                updates_clickable.add(new ClickableUpdate(offset + i, offset + i + 1));
+            }
+        }
+        clickableUpdates.setValue(updates_clickable);
     }
 
     public void onSymbolInserted(int position, String symbol) {
@@ -101,6 +122,17 @@ public class NoteDetailsViewModel {
 
     public void onAfterTextChanged(CharSequence s) {
         // Placeholder for handling text after change
+    }
+
+    public void saveNote(long noteId, String heading, String details) {
+        String markup = NoteTreeMarkupConverter.buildMarkupFromTree(tree.getRoot());
+        if (noteId == -1) {
+            // Add a new note
+            databaseHelper.addNote(heading, markup);
+        } else {
+            // Update the existing note
+            databaseHelper.updateNote(noteId, heading, markup);
+        }
     }
 
     public static class SymbolUpdate {

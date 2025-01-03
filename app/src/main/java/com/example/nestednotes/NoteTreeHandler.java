@@ -67,6 +67,10 @@ public class NoteTreeHandler {
         return root;
     }
 
+    public void setRoot(TreeNode root) {
+        this.root = root;
+    }
+
     public void addSubstring(int textPosition, String substring) {
         TreeNode targetNode = findNodeByTextPosition(root, textPosition, 0, true);
         if (targetNode != null) {
@@ -150,6 +154,16 @@ public class NoteTreeHandler {
             symbolsToAdd.add("\n...... \n");
         }
         return symbolsToAdd;
+    }
+
+    public String calculateSymbolsFromTree() {
+        TreeNode targetNode = root;
+        List<String> symbolsToAdd = new ArrayList<>();
+        collectSymbolsForNode(targetNode, symbolsToAdd);
+        if (symbolsToAdd.isEmpty()) {
+            symbolsToAdd.add("");
+        }
+        return String.join("", symbolsToAdd);
     }
 
     private void collectSymbolsForNode(TreeNode node, List<String> symbols) {

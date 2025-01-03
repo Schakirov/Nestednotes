@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.util.Pair;
 
 public class NoteDetailsActivity extends AppCompatActivity {
 
@@ -46,9 +47,12 @@ public class NoteDetailsActivity extends AppCompatActivity {
             // Load existing note details
             DatabaseHelper.Note note = databaseHelper.getNoteById(noteId);
             if (note != null) {
-                noteHeadingEditText.setText(note.getHeading());
-                noteDetailsEditText.setText(note.getDetails());
-                viewModel.onNoteLoading(noteId);
+                Pair<String, String> noteData = viewModel.onNoteLoading(noteId);
+                if (noteData != null) {
+                    noteHeadingEditText.setText(noteData.first);
+                    noteDetailsEditText.setText(noteData.second);
+                    viewModel.onNoteLoadingMakeSymbolsClickable(noteData.second);
+                }
             }
         }
 
@@ -146,13 +150,7 @@ public class NoteDetailsActivity extends AppCompatActivity {
             return;
         }
 
-        if (noteId == -1) {
-            // Add a new note
-            databaseHelper.addNote(heading, details);
-        } else {
-            // Update the existing note
-            databaseHelper.updateNote(noteId, heading, details);
-        }
+        viewModel.saveNote(noteId, heading, details);
 
         // Return to MainActivity
         Intent intent = new Intent(this, MainActivity.class);

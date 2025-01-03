@@ -19,6 +19,9 @@ Commit 4f6b0c7
 Add NoteTreeHandler.java for handling notes as trees.
 First-level comments can be expanded and minimized correctly.
 
-Commit
+Commit e25e695
 Add nested comments support
+
+Commit
+Add saving and loading of nested comments
 
