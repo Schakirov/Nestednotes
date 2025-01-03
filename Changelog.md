@@ -15,6 +15,10 @@ Commit 56112e1
 Add ViewModel and basic symbol insertion handling for NoteDetailsActivity
 Implemented NoteDetailsViewModel to handle symbol insertion, text updates, and state management for NoteDetailsActivity. Integrated a TextWatcher to notify the ViewModel of text changes. Added a stream to emit symbol updates from ViewModel based on inputs from TextWatcher. 
 
-Commit
+Commit 4f6b0c7
 Add NoteTreeHandler.java for handling notes as trees.
 First-level comments can be expanded and minimized correctly.
+
+Commit
+Add nested comments support
+

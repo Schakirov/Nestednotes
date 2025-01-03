@@ -92,9 +92,9 @@ public class NoteDetailsViewModel {
 
     public void onTextChanged(CharSequence s, int start, int before, int count) {
         // Update the noteDetails string with the correct part of the changed text
-        noteDetails = noteDetails.substring(0, start)
+        /*noteDetails = noteDetails.substring(0, start)
                 + s.subSequence(start, start + count)
-                + noteDetails.substring(start + before);
+                + noteDetails.substring(start + before);*/
         tree.addSubstring(start, s.subSequence(start, start + count).toString());
         noteDetails = noteDetails;
     }

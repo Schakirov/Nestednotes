@@ -174,16 +174,17 @@ public class NoteTreeHandler {
     public TreeNode findNodeByTextPosition(TreeNode node, int textPosition, int currentPos, boolean left_mode) {
         // left_mode is for adding to the end of the left mode when ambiguous
         if (node != root) {
-            // if (!node.isExpandable()), but we also need to handle expandable notes
+            // if (!node.isExpandable()), we also need to handle expandable nodes
             int endPos = currentPos + node.getValue().length();
             if (textPosition >= currentPos && textPosition < endPos + (left_mode ? 1 : 0)) {
                 return node;
             }
-            return null;
+            // return null; it would be BFS here
         }
 
         if (node.isExpanded()) {
-            for (TreeNode child : node.getChildren()) {
+            currentPos += node.getValue().length();
+            for (TreeNode child : node.getChildren()) { //getNodeTextLength(child);
                 TreeNode found = findNodeByTextPosition(child, textPosition, currentPos, left_mode);
                 if (found != null) {
                     return found;
@@ -196,7 +197,12 @@ public class NoteTreeHandler {
     }
 
     private TreeNode findParentNode(TreeNode parent, TreeNode target) {
-        if (parent.getChildren().contains(target)) {
+        List<TreeNode> children = parent.getChildren();
+        if (children == null) {
+            return null;
+        }
+
+        if (children.contains(target)) {
             return parent;
         }
 
@@ -216,11 +222,16 @@ public class NoteTreeHandler {
         }
 
         if (root.isExpandable() && root.isExpanded()) {
-            for (TreeNode child : root.getChildren()) {
+            currentPos += root.getValue().length();
+            for (TreeNode child : root.getChildren()) { //getNodeTextLength(root);
                 int childStartPos = getNodeStartTextPosition(child, targetNode, currentPos);
                 if (childStartPos != -1) {
                     return childStartPos;
                 }
+                /*if (!(child.isExpandable() && child.isExpanded())) {
+                    // don't add if it had been already added as a root previously
+                    currentPos += child.getValue().length();
+                }*/
                 currentPos += getNodeTextLength(child);
             }
         }
@@ -237,7 +248,7 @@ public class NoteTreeHandler {
             return 1; // Represented by "■" in text mode
         }
 
-        int length = 1; // "■" at the start
+        int length = node.getValue().length(); // "■" at the start, or "" for root
         for (TreeNode child : node.getChildren()) {
             length += getNodeTextLength(child);
         }
