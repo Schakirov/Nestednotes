@@ -22,6 +22,10 @@ First-level comments can be expanded and minimized correctly.
 Commit e25e695
 Add nested comments support
 
-Commit
+Commit 6c4ff59
 Add saving and loading of nested comments
+
+Commit
+Add README and LICENSE
+Added a README file with an overview of the project and a LICENSE file to specify the licensing terms.
 
